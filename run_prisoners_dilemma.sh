@@ -98,12 +98,13 @@ prisoners_dilemma_round(){
 
       # Execute prisoner1's code
       cd "$folder1"
-      answer1=$(cargo run 2 "$prisoner1_name" "$prisoner2_name" cake 2>/dev/null)
+      #answer1=$(cargo run 2 "$prisoner1_name" "$prisoner2_name" cake 2>/dev/null)
+      answer1=$(./run.sh 2 "$prisoner1_name" "$prisoner2_name" cake 2>/dev/null)
       cd - > /dev/null 2>&1
 
       # Execute prisoner2's code
       cd "$folder2"
-      answer2=$(cargo run 2 "$prisoner2_name" "$prisoner1_name" cake 2>/dev/null)
+      answer2=$(./run.sh 2 "$prisoner2_name" "$prisoner1_name" cake 2>/dev/null)
       cd - > /dev/null 2>&1
 
       # Log each prisoner and their answer
