@@ -5,5 +5,5 @@ Fourth Step => Generate round score.							OK
 Fifth Step => Run multiple rounds.							OK
 Sixth Step => Generate table data.							OK
 Senventh Step => Handle cake bonus.
-Eighth Step => Accept other languanges
+Eighth Step => Accept other languanges							OK
 Declare Winner => Put table in order of points.
