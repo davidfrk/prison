@@ -1,0 +1,8 @@
+First Step => Select prisoners from the prisoners folder and run them one by one.	OK
+Second Step => Be able to pair prisoners and compare their answers.			OK
+Third Step => Generate comparative log, cooperations/draws/defects.			OK
+Fourth Step => Generate round score.							OK
+Fifth Step => Run multiple rounds.							OK
+Sixth Step => Generate table data.							OK
+Senventh Step => Handle cake bonus.
+Declare Winner => Put table in order of points.
