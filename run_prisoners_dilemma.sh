@@ -23,9 +23,13 @@ log_table_data(){
   line+="Score\tCooperated\tDefected\tBoth_Cooperated\tBoth_Defected\tWas_Betrayed\tDid_Betray"
   echo -e "$line" > "$logfile"
 
-  for ((i=0; i<${#subfolders[@]}; i++)); do
-    prisoner_name=$(basename ${subfolders[i]})
-    log_line $prisoner_name $logfile
+  #Lets create a sorted list of prisoners ordered by their score
+  sorted_prisoners=($(for prisoner in "${prisoners[@]}";
+   do echo "$prisoner $(get_data_or_zero $prisoner score)"; done | sort -k2nr | cut -d' ' -f1))
+
+  # Log lines using sorted_prisoners
+  for prisoner in "${sorted_prisoners[@]}"; do
+    log_line $prisoner $logfile
   done
 }
 
@@ -159,7 +163,11 @@ if [ -d "$directory" ]; then
 
   # List all subfolders inside the directory
   subfolders=($(find "$directory" -mindepth 1 -maxdepth 1 -type d))
-  echo "We have ${#subfolders[@]} prisoners in this prison"
+  prisoners=()
+  for subfolder in "${subfolders[@]}"; do
+    prisoners+=("$(basename $subfolder)")
+  done
+  echo "We have ${#prisoners[@]} prisoners in this prison"
 
   # Declare an associative array to count the occurrences
   declare -A prisoner_data
