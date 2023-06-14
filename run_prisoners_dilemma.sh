@@ -87,13 +87,34 @@ score_prisoner(){
   ((prisoner_data["$prisoner_name:score"]=$current_count + $data))
 }
 
+# Cd to bot's folder and call ./run.sh with correct parameters
+call_bot(){
+  folder=$1
+  first_prisoner=$2
+  second_prisoner=$3
+  cake=$4
+
+  cd "$folder"
+
+  # Generating parameters
+  parameters="$first_prisoner $second_prisoner"
+  parameters+=" $(get_data_or_zero "$first_prisoner:$second_prisoner" "Defected")"
+  parameters+=" $(get_data_or_zero "$second_prisoner:$first_prisoner" "Defected")"
+  if [[ $cake == true ]]; then
+    parameters+=" cake"
+  fi
+
+  answer=$(./run.sh $parameters 2>/dev/null)
+  cd - > /dev/null 2>&1
+
+  echo $answer
+}
+
 # Run round where all the prisoners play with one another
 prisoners_dilemma_round(){
   cake=false
-  if [[ -n $1 ]]; then
-    if [[ "$1" == "cake" ]]; then
-      cake=true
-    fi
+  if [[ -n $1 &&  "$1" == "cake" ]]; then
+    cake=true
   fi
   echo "Round cake $cake."
 
@@ -109,22 +130,10 @@ prisoners_dilemma_round(){
       echo "Running $prisoner1_name against $prisoner2_name."
 
       # Execute prisoner1's code
-      cd "$folder1"
-      parameters="$prisoner1_name $prisoner2_name"
-      if [ $cake ]; then
-        parameters+=" cake"
-      fi
-      answer1=$(./run.sh $parameters 2>/dev/null)
-      cd - > /dev/null 2>&1
+      answer1=$(call_bot $folder1 $prisoner1_name $prisoner2_name $cake)
 
       # Execute prisoner2's code
-      cd "$folder2"
-      parameters="$prisoner2_name $prisoner1_name"
-      if [ $cake ]; then
-        parameters+=" cake"
-      fi
-      answer2=$(./run.sh $parameters 2>/dev/null)
-      cd - > /dev/null 2>&1
+      answer2=$(call_bot $folder2 $prisoner2_name $prisoner1_name $cake)
 
       # Log each prisoner and their answer
       echo "$prisoner1_name $answer1 $prisoner2_name $answer2" >> answer.log
@@ -139,7 +148,7 @@ prisoners_dilemma_round(){
       score_was_betrayed=0
 
       cake_bonus=1
-      if [ cake ]; then
+      if [[ cake == true ]]; then
         cake_bonus=5
       fi
 
@@ -150,11 +159,17 @@ prisoners_dilemma_round(){
           record_prisoner_data $prisoner2_name "BothCooperated"
           score_prisoner $prisoner1_name $(($score_both_cooperated * cake_bonus))
           score_prisoner $prisoner2_name $(($score_both_cooperated * cake_bonus))
+
+          record_prisoner_data "$prisoner1_name:$prisoner2_name" "Cooperated"
+          record_prisoner_data "$prisoner2_name:$prisoner1_name" "Cooperated"
         else
           record_prisoner_data $prisoner1_name "BothDefected"
           record_prisoner_data $prisoner2_name "BothDefected"
           score_prisoner $prisoner1_name $(($score_both_defected * cake_bonus))
           score_prisoner $prisoner2_name $(($score_both_defected * cake_bonus))
+
+          record_prisoner_data "$prisoner1_name:$prisoner2_name" "Defected"
+          record_prisoner_data "$prisoner2_name:$prisoner1_name" "Defected"
         fi
       else
         if [ "$answer1" == "Cooperate" ]; then
@@ -162,11 +177,17 @@ prisoners_dilemma_round(){
           record_prisoner_data $prisoner2_name "Betrayed"
           score_prisoner $prisoner1_name $(($score_was_betrayed * cake_bonus))
           score_prisoner $prisoner2_name $(($score_betrayed * cake_bonus))
+
+          record_prisoner_data "$prisoner1_name:$prisoner2_name" "Cooperated"
+          record_prisoner_data "$prisoner2_name:$prisoner1_name" "Defected"
         else
           record_prisoner_data $prisoner1_name "Betrayed"
           record_prisoner_data $prisoner2_name "WasBetrayed"
           score_prisoner $prisoner1_name $(($score_betrayed * cake_bonus))
           score_prisoner $prisoner2_name $(($score_was_betrayed * cake_bonus))
+
+          record_prisoner_data "$prisoner1_name:$prisoner2_name" "Defected"
+          record_prisoner_data "$prisoner2_name:$prisoner1_name" "Cooperated"
         fi
       fi
     done
@@ -203,7 +224,7 @@ if [ -d "$directory" ]; then
     prisoners_dilemma_round
   done
 
-  #print_prisoner_data
+  print_prisoner_data > match.log
   log_table_data
   cat prison.log
   echo "Done. If you need to see the score again, check out (prison.log)."
