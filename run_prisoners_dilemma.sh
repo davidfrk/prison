@@ -89,6 +89,14 @@ score_prisoner(){
 
 # Run round where all the prisoners play with one another
 prisoners_dilemma_round(){
+  cake=false
+  if [[ -n $1 ]]; then
+    if [[ "$1" == "cake" ]]; then
+      cake=true
+    fi
+  fi
+  echo "Round cake $cake."
+
   # Loop through each subfolder, prisoner pair and logs their answer
   for ((i=0; i<${#subfolders[@]}; i++)); do
     for ((j=i+1; j<${#subfolders[@]}; j++)); do
@@ -102,13 +110,20 @@ prisoners_dilemma_round(){
 
       # Execute prisoner1's code
       cd "$folder1"
-      #answer1=$(cargo run 2 "$prisoner1_name" "$prisoner2_name" cake 2>/dev/null)
-      answer1=$(./run.sh 2 "$prisoner1_name" "$prisoner2_name" cake 2>/dev/null)
+      parameters="$prisoner1_name $prisoner2_name"
+      if [ $cake ]; then
+        parameters+=" cake"
+      fi
+      answer1=$(./run.sh $parameters 2>/dev/null)
       cd - > /dev/null 2>&1
 
       # Execute prisoner2's code
       cd "$folder2"
-      answer2=$(./run.sh 2 "$prisoner2_name" "$prisoner1_name" cake 2>/dev/null)
+      parameters="$prisoner2_name $prisoner1_name"
+      if [ $cake ]; then
+        parameters+=" cake"
+      fi
+      answer2=$(./run.sh $parameters 2>/dev/null)
       cd - > /dev/null 2>&1
 
       # Log each prisoner and their answer
@@ -123,30 +138,35 @@ prisoners_dilemma_round(){
       score_betrayed=10
       score_was_betrayed=0
 
+      cake_bonus=1
+      if [ cake ]; then
+        cake_bonus=5
+      fi
+
       # Comparing answers
       if [ "$answer1" == "$answer2" ]; then
         if [ "$answer1" == "Cooperate" ]; then
           record_prisoner_data $prisoner1_name "BothCooperated"
           record_prisoner_data $prisoner2_name "BothCooperated"
-          score_prisoner $prisoner1_name $score_both_cooperated
-          score_prisoner $prisoner2_name $score_both_cooperated
+          score_prisoner $prisoner1_name $(($score_both_cooperated * cake_bonus))
+          score_prisoner $prisoner2_name $(($score_both_cooperated * cake_bonus))
         else
           record_prisoner_data $prisoner1_name "BothDefected"
           record_prisoner_data $prisoner2_name "BothDefected"
-          score_prisoner $prisoner1_name $score_both_defected
-          score_prisoner $prisoner2_name $score_both_defected
+          score_prisoner $prisoner1_name $(($score_both_defected * cake_bonus))
+          score_prisoner $prisoner2_name $(($score_both_defected * cake_bonus))
         fi
       else
         if [ "$answer1" == "Cooperate" ]; then
           record_prisoner_data $prisoner1_name "WasBetrayed"
           record_prisoner_data $prisoner2_name "Betrayed"
-          score_prisoner $prisoner1_name $score_was_betrayed
-          score_prisoner $prisoner2_name $score_betrayed
+          score_prisoner $prisoner1_name $(($score_was_betrayed * cake_bonus))
+          score_prisoner $prisoner2_name $(($score_betrayed * cake_bonus))
         else
           record_prisoner_data $prisoner1_name "Betrayed"
           record_prisoner_data $prisoner2_name "WasBetrayed"
-          score_prisoner $prisoner1_name $score_betrayed
-          score_prisoner $prisoner2_name $score_was_betrayed
+          score_prisoner $prisoner1_name $(($score_betrayed * cake_bonus))
+          score_prisoner $prisoner2_name $(($score_was_betrayed * cake_bonus))
         fi
       fi
     done
@@ -176,6 +196,8 @@ if [ -d "$directory" ]; then
   if [ "$#" -eq 1 ]; then
     rounds=$1
   fi
+
+  prisoners_dilemma_round cake
 
   for ((r=0; r<$rounds; r++)); do
     prisoners_dilemma_round
