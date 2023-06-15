@@ -6,5 +6,5 @@ Fifth Step => Run multiple rounds.							OK
 Sixth Step => Generate table data.							OK
 Senventh Step => Handle cake bonus.							OK
 Eighth Step => Accept other languanges							OK
-Ninth Step => Pass as parameter the betrayal history between the two competitors	OK
+Ninth Step => Pass as parameter the history between the two competitors			OK
 Declare Winner => Put table in order of points.						OK

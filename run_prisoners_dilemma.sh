@@ -69,6 +69,28 @@ get_data_or_zero(){
   echo $current
 }
 
+get_data_or_empty_string(){
+  prisoner_name=$1
+
+  current=${prisoner_data["$prisoner_name"]}
+  if [[ -z $current ]]; then
+    current=""
+  fi
+
+  echo $current
+}
+
+# Record prisoner history with another prisoner
+record_prisoner_history(){
+  prisoner_name=$1
+  data=$2
+
+  current_history=$(get_data_or_empty_string $prisoner_name)
+  current_history+=$data
+
+  prisoner_data["$prisoner_name"]=$current_history
+}
+
 # Increments prisoner_name:data, used to track statistics from each prisoner
 record_prisoner_data(){
   prisoner_name=$1
@@ -98,8 +120,12 @@ call_bot(){
 
   # Generating parameters
   parameters="$first_prisoner $second_prisoner"
-  parameters+=" $(get_data_or_zero "$first_prisoner:$second_prisoner" "Defected")"
-  parameters+=" $(get_data_or_zero "$second_prisoner:$first_prisoner" "Defected")"
+  # Calling with number of defects
+  #parameters+=" $(get_data_or_zero "$first_prisoner:$second_prisoner" "Defected")"
+  #parameters+=" $(get_data_or_zero "$second_prisoner:$first_prisoner" "Defected")"
+  # Calling with history between prisoners
+  parameters+=" $(get_data_or_empty_string "$first_prisoner:$second_prisoner")"
+  parameters+=" $(get_data_or_empty_string "$second_prisoner:$first_prisoner")"
   if [[ $cake == true ]]; then
     parameters+=" cake"
   fi
@@ -107,6 +133,7 @@ call_bot(){
   answer=$(./run.sh $parameters 2>/dev/null)
   cd - > /dev/null 2>&1
 
+  echo $parameters >> calls.log
   echo $answer
 }
 
@@ -162,6 +189,8 @@ prisoners_dilemma_round(){
 
           record_prisoner_data "$prisoner1_name:$prisoner2_name" "Cooperated"
           record_prisoner_data "$prisoner2_name:$prisoner1_name" "Cooperated"
+          record_prisoner_history "$prisoner1_name:$prisoner2_name" "c"
+          record_prisoner_history "$prisoner2_name:$prisoner1_name" "c"
         else
           record_prisoner_data $prisoner1_name "BothDefected"
           record_prisoner_data $prisoner2_name "BothDefected"
@@ -170,6 +199,8 @@ prisoners_dilemma_round(){
 
           record_prisoner_data "$prisoner1_name:$prisoner2_name" "Defected"
           record_prisoner_data "$prisoner2_name:$prisoner1_name" "Defected"
+          record_prisoner_history "$prisoner1_name:$prisoner2_name" "d"
+          record_prisoner_history "$prisoner2_name:$prisoner1_name" "d"
         fi
       else
         if [ "$answer1" == "Cooperate" ]; then
@@ -180,6 +211,8 @@ prisoners_dilemma_round(){
 
           record_prisoner_data "$prisoner1_name:$prisoner2_name" "Cooperated"
           record_prisoner_data "$prisoner2_name:$prisoner1_name" "Defected"
+          record_prisoner_history "$prisoner1_name:$prisoner2_name" "c"
+          record_prisoner_history "$prisoner2_name:$prisoner1_name" "d"
         else
           record_prisoner_data $prisoner1_name "Betrayed"
           record_prisoner_data $prisoner2_name "WasBetrayed"
@@ -188,6 +221,8 @@ prisoners_dilemma_round(){
 
           record_prisoner_data "$prisoner1_name:$prisoner2_name" "Defected"
           record_prisoner_data "$prisoner2_name:$prisoner1_name" "Cooperated"
+          record_prisoner_history "$prisoner1_name:$prisoner2_name" "d"
+          record_prisoner_history "$prisoner2_name:$prisoner1_name" "c"
         fi
       fi
     done
@@ -201,6 +236,7 @@ directory="prisoners"
 # Check if the directory exists
 if [ -d "$directory" ]; then
   echo -n > answer.log
+  echo -n > calls.log
 
   # List all subfolders inside the directory
   subfolders=($(find "$directory" -mindepth 1 -maxdepth 1 -type d))
