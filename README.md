@@ -21,20 +21,20 @@ Keep in mind that this repository doesn't require anything else, but your bots m
 Bots go into the prisoners subfolder, and they are required to possess a 'run.sh' script that compiles and runs them. Feel free to write your bots in any language, but be sure the machine running the competition has their language requirements set up.
 
 To run the competition, use the following command:
-'''shell
+```shell
 $ ./run_prisoners_dilemma.sh 10
-'''
+```
 The number of rounds is specified as a parameter.
 
 To obtain the list of prisoners, use:
-'''shell
+```shell
 $ ./list_prisoners.sh
-'''
+```
 
 Additionally you can run each prisoner against itself using:
-'''shell
+```shell
 $ ./run_each_prisoner.sh
-'''
+```
 
 ## Features
 
