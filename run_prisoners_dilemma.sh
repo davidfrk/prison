@@ -163,7 +163,7 @@ prisoners_dilemma_round(){
       answer2=$(call_bot $folder2 $prisoner2_name $prisoner1_name $cake)
 
       # Log each prisoner and their answer
-      echo "$prisoner1_name $answer1 $prisoner2_name $answer2" >> answer.log
+      echo "$prisoner1_name $answer1 $prisoner2_name $answer2" >> answers.log
 
       record_prisoner_data $prisoner1_name $answer1
       record_prisoner_data $prisoner2_name $answer2
@@ -235,7 +235,7 @@ directory="prisoners"
 
 # Check if the directory exists
 if [ -d "$directory" ]; then
-  echo -n > answer.log
+  echo -n > answers.log
   echo -n > calls.log
 
   # List all subfolders inside the directory
