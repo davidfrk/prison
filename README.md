@@ -7,7 +7,6 @@ This project allows you to run a competition for the Prisoner's Dilemma game, in
 - [Installation](#installation)
 - [Usage](#usage)
 - [Features](#features)
-- [Contributing](#contributing)
 - [Testing](#testing)
 - [License](#license)
 
