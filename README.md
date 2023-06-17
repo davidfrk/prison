@@ -48,3 +48,5 @@ $ ./run_each_prisoner.sh
 ## License
 
 This project is licensed under the MIT License.
+
+[![NPM](https://img.shields.io/npm/l/react)](https://github.com/davidfrk/prisoners-dilemma/blob/master/LICENSE)
